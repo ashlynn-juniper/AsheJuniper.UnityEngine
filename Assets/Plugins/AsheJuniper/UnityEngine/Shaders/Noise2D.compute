@@ -3,6 +3,8 @@
 float Resolution;
 float Frequency;
 
+float2 Offset;
+
 RWTexture2D<float> Result;
 
 float DropOff(float x);
@@ -24,8 +26,11 @@ float DropOff(float x)
 
 float CalculateNoise2D(uint3 id)
 {
+    float2 position = Offset * 2.0f + float2(id.xy);
+    
     float2 g = normalize(float2(0.2, 0.1));
-    float2 v = float2(id.xy) / (Resolution * 0.5) - float2(1.0, 1.0);
+    //float2 v = position / (Resolution * 0.5) - float2(1.0, 1.0);
+    float2 v = (position) * (1 / Resolution);
     
     v *= Frequency;
     

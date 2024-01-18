@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace AsheJuniper.UnityEngine
+namespace AsheJuniper.Unity.Engine
 {
     public class ProceduralTerrain : MonoBehaviour
     {
@@ -20,6 +20,7 @@ namespace AsheJuniper.UnityEngine
         {
             heightmap.resolution = resolution;
             heightmap.frequency = frequency;
+            heightmap.transform.position = transform.position;
 
             heightmap.Build();
 

@@ -1,9 +1,11 @@
 #pragma kernel GenerateHeightmap
 
-float Resolution;
+int Resolution;
 
 float Amplitude;
 float Frequency;
+
+float3 ChunkPosition;
 
 RWTexture2D<float> Heightmap;
 
@@ -41,7 +43,7 @@ float GenerateMinorFeatures(float2 position)
 [numthreads(16, 16, 1)]
 void GenerateHeightmap(uint3 id : SV_DispatchThreadID)
 {
-    float2 position = float2(id.xy);
+    float2 position = float2(ChunkPosition.x + id.x, ChunkPosition.z + id.y);
     
     float height = GenerateBase(position * Frequency) * Amplitude;
     

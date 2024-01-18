@@ -1,19 +1,21 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace AsheJuniper.UnityEngine
+namespace AsheJuniper.Unity.Engine
 {
     public class Heightmap : MonoBehaviour
     {
-        public int resolution = 16;
-        public float frequency = 0.05f;
+        public int resolution = 256;
+        public float frequency = 0.7f;
 
         public RenderTexture heightmap;
 
         public ComputeShader computeShader;
 
         public bool rebuild = true;
+
+        private bool hasBuiltBefore = false;
 
         public bool IsReady => !rebuild;
 
@@ -23,8 +25,14 @@ namespace AsheJuniper.UnityEngine
 
             heightmap.enableRandomWrite = true;
 
-            computeShader.SetFloat("Resolution", resolution);
+            computeShader.SetInt("Resolution", resolution);
             computeShader.SetFloat("Frequency", frequency);
+
+            var offset = new Vector2(transform.position.x, transform.position.z);
+
+            computeShader.SetVector("Offset", offset);
+
+            //Debug.Log("[Task] [✔] Compute heightmap for chunk (" + transform.position.x + ", " + transform.position.z + ")");
 
             computeShader.SetTexture(0, "Result", heightmap);
 
@@ -33,6 +41,7 @@ namespace AsheJuniper.UnityEngine
             computeShader.Dispatch(noise2DKernel, 16, 16, 1);
 
             rebuild = false;
+            hasBuiltBefore = true;
         }
 
         public RenderTexture ToTexture()
@@ -52,7 +61,7 @@ namespace AsheJuniper.UnityEngine
 
         private void Update()
         {
-            if (rebuild)
+            if (!hasBuiltBefore || rebuild)
             {
                 Build();
             }
