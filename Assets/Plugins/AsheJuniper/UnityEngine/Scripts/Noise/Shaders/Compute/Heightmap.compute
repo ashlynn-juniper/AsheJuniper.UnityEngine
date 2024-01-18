@@ -1,0 +1,55 @@
+#pragma kernel GenerateHeightmap
+
+float Resolution;
+
+float Amplitude;
+float Frequency;
+
+RWTexture2D<float> Heightmap;
+
+float DropOff(float x);
+float Noise(uint3 id);
+
+float DropOff(float x)
+{
+    float v = 1 - abs(x);
+    return 3 * v * v - 2 * v * v * v;
+}
+ 
+float Noise2D(float2 position)
+{
+    float2 g = normalize(float2(0.2f, 0.1f));
+    float2 v = position / (Resolution * 0.5f) - float2(1.0f, 1.0f);
+    return dot(g, v) * DropOff(v.x) * DropOff(v.y);
+}
+
+float GenerateBase(float2 position)
+{
+    return (1.0f + Noise2D(position)) * 0.5f;
+}
+
+float GenerateMajorFeatures(float2 position)
+{
+    return (1.0f + Noise2D(position * 2)) * 0.5f * 0.2f;
+}
+
+float GenerateMinorFeatures(float2 position)
+{
+    return (1.0f + Noise2D(position * 4)) * 0.5f * 0.05f;
+}
+
+[numthreads(16, 16, 1)]
+void GenerateHeightmap(uint3 id : SV_DispatchThreadID)
+{
+    float2 position = float2(id.xy);
+    
+    float height = GenerateBase(position * Frequency) * Amplitude;
+    
+    height += GenerateMajorFeatures(position * Frequency) * Amplitude;
+    
+    height += GenerateMinorFeatures(position * Frequency) * Amplitude;
+    
+    //height *= Amplitude;
+    
+    Heightmap[id.xy] = height;
+}
